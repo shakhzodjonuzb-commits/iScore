@@ -1,0 +1,25 @@
+{
+  "name": "iptv-player-desktop",
+  "version": "1.0.0",
+  "description": "IPTV Player (private) - by Shakhzodjon Khudaybediyev",
+  "author": "Shakhzodjon Khudaybediyev",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable --x64 --publish never"
+  },
+  "dependencies": {
+    "hls.js": "^1.5.17"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "uz.ilhomvich.iptv",
+    "productName": "IPTV Player",
+    "files": ["src/**/*", "assets/**/*", "config.json"],
+    "directories": { "output": "dist" },
+    "win": { "target": [{ "target": "portable", "arch": ["x64"] }] }
+  }
+}

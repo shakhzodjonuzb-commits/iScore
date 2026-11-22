@@ -1,0 +1,3 @@
+-keep class uz.ilhomvich.iptv.** { *; }
+-dontwarn org.checkerframework.**
+-dontwarn javax.annotation.**
