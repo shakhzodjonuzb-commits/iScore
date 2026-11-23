@@ -5,3 +5,5 @@ local.properties
 *.iml
 node_modules/
 desktop/dist/
+*.apk
+*.exe
