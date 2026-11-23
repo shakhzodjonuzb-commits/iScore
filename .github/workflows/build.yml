@@ -1,4 +1,15 @@
 
+name: Build IPTV Player
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
   android:
     name: Android APK (Phone + TV)
     runs-on: ubuntu-24.04
@@ -7,7 +18,7 @@
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup JDK 17
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -17,14 +28,13 @@
         uses: android-actions/setup-android@v4
         with:
           packages: ''
-          accept-android-sdk-licenses: true
 
-      - name: Setup Gradle 8.14
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.14'
 
-      - name: Install Android build packages
+      - name: Install Android packages
         run: |
           sdkmanager --install \
             "platform-tools" \
@@ -43,3 +53,46 @@
           name: IPTV-Player-Android
           path: app/build/outputs/apk/**/*.apk
           if-no-files-found: error
+          retention-days: 14
+
+  windows:
+    name: Windows EXE
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        working-directory: desktop
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Inject TOTP secret
+        env:
+          TOTP_SECRET: ${{ secrets.TOTP_SECRET }}
+        run: |
+          if [ -n "$TOTP_SECRET" ]; then
+            echo "{\"totpSecret\":\"$TOTP_SECRET\"}" > config.json
+          fi
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Windows EXE
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npx electron-builder --win portable --x64 --publish never
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: IPTV-Player-Windows
+          path: desktop/dist/*.exe
+          if-no-files-found: error
+          retention-days: 14
