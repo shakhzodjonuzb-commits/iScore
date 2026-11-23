@@ -1,4 +1,3 @@
-
 name: Build IPTV Player
 
 on:
@@ -22,21 +21,28 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
-      - name: Android SDK
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            cmdline-tools;latest
+            platform-tools
+            platforms;android-35
+            build-tools;35.0.0
 
-      - name: Gradle 8.14
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.14'
+          gradle-version: "8.14"
 
       - name: Build Debug + Release APK
         env:
           TOTP_SECRET: ${{ secrets.TOTP_SECRET }}
         run: |
-          gradle --no-daemon assembleDebug assembleRelease --stacktrace
+          chmod +x ./gradlew
+          ./gradlew --no-daemon assembleDebug assembleRelease --stacktrace
 
       - name: Upload Android APKs
         uses: actions/upload-artifact@v4
@@ -62,14 +68,14 @@ jobs:
       - name: Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Inject TOTP secret (optional)
         env:
           TOTP_SECRET: ${{ secrets.TOTP_SECRET }}
         run: |
           if [ -n "$TOTP_SECRET" ]; then
-            echo "{\"totpSecret\":\"$TOTP_SECRET\"}" > config.json
+            printf '{"totpSecret":"%s"}\n' "$TOTP_SECRET" > config.json
           fi
 
       - name: Install dependencies
